@@ -23,9 +23,15 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
         client = null
     }
 
-    fun unregister() {
-        client = null
-        dataSource.unregister()
+    fun unregister(): Result<Boolean> {
+        val result = dataSource.unregister(clientId = client?.clientId!!,
+            masterAccessToken = client?.registrationAccessToken!!)
+
+        if (result is Result.Success) {
+            this.client = null
+        }
+
+        return result
     }
 
     fun register(username: String): Result<RegisteredOAuthClient> {

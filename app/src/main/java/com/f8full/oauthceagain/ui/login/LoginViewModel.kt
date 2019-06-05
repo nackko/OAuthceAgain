@@ -1,5 +1,6 @@
 package com.f8full.oauthceagain.ui.login
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,9 +10,14 @@ import com.f8full.oauthceagain.data.Result
 
 import com.f8full.oauthceagain.R
 import com.f8full.oauthceagain.data.OAuthClientRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository,
                      private val authClientRepository: OAuthClientRepository) : ViewModel() {
+
+    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
@@ -23,22 +29,31 @@ class LoginViewModel(private val loginRepository: LoginRepository,
     val clientRegistrationResult: LiveData<OAuthClientRegistrationResult> = _OAuthClientregistrationResult
 
     fun registerOAuthClient(username: String){
-        val result = authClientRepository.register(username)
 
-        if (result is Result.Success) {
-            _OAuthClientregistrationResult.value = OAuthClientRegistrationResult(success =
-                    RegisteredOAuthClientView( registrationAccessToken = result.data.registrationAccessToken)
-            )
-        } else {
-            _OAuthClientregistrationResult.value = OAuthClientRegistrationResult( error =
-                    R.string.registration_failed)
+        coroutineScopeIO.launch {
+            val result = authClientRepository.register(username)
+
+            if (result is Result.Success) {
+                _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult(success =
+                RegisteredOAuthClientView( registrationAccessToken = result.data.registrationAccessToken))
+                )
+            } else {
+                _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult( error =
+                R.string.registration_failed))
+            }
         }
     }
 
     fun unregisterAuthclient() {
 
-        authClientRepository.unregister()
+        coroutineScopeIO.launch {
+            val result = authClientRepository.unregister()
 
+            if (result is Result.Success){
+                _OAuthClientregistrationResult.postValue(null)
+                Log.i("TAG", "OAuth client deleted")
+            }
+        }
     }
 
     fun isRegistered(): Boolean{

@@ -26,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
         val username = findViewById<EditText>(R.id.username)
         val clientInfo = findViewById<TextView>(R.id.client_info)
         val registering = findViewById<Button>(R.id.registering)
+        registering.isEnabled = true
         val loading = findViewById<ProgressBar>(R.id.loading)
 
         loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
@@ -46,6 +47,11 @@ class LoginActivity : AppCompatActivity() {
         })
 
         loginViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
+            if (it == null) {
+                clientInfo.text = ""
+                loading.visibility = View.INVISIBLE
+            }
+
             val registrationResult = it ?: return@Observer
 
             loading.visibility = View.GONE

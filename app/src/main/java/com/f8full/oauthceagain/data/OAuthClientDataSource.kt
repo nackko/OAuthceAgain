@@ -18,7 +18,7 @@ class OAuthClientDataSource {
     fun register(username: String): Result<RegisteredOAuthClient> {
 
         val jsonMetadata =
-            "{\"redirect_uris\":[\"https://client.example.org/oauth/callback\"],\"client_name\":\"#findmybikes\",\"software_id\":\"github.com/f8full/findmybikesTRUC\",\"software_version\":\"999\",\"client_kind\":\"mobile\",\"client_uri\":\"https://client.example.org/\",\"logo_uri\":\"https://client.example.org/logo.svg\",\"policy_uri\":\"https://client/example.org/policy\"}"
+            "{\"redirect_uris\":[\"findmybikes://com.f8full.oauthceagain.oauth2redirect\"],\"client_name\":\"#findmybikes\",\"software_id\":\"github.com/f8full/findmybikesTRUC\",\"software_version\":\"999\",\"client_kind\":\"mobile\",\"client_uri\":\"https://client.example.org/\",\"logo_uri\":\"https://client.example.org/logo.svg\",\"policy_uri\":\"https://client/example.org/policy\"}"
         val metadata = OIDCClientMetadata.parse(JSONObjectUtils.parse(jsonMetadata))
 
 // Make registration request

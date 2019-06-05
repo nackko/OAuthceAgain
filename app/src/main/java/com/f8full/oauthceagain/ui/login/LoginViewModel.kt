@@ -10,9 +10,16 @@ import com.f8full.oauthceagain.data.Result
 
 import com.f8full.oauthceagain.R
 import com.f8full.oauthceagain.data.OAuthClientRepository
+import com.nimbusds.oauth2.sdk.ResponseType
+import com.nimbusds.oauth2.sdk.Scope
+import com.nimbusds.oauth2.sdk.id.ClientID
+import com.nimbusds.oauth2.sdk.id.State
+import com.nimbusds.openid.connect.sdk.AuthenticationRequest
+import com.nimbusds.openid.connect.sdk.Nonce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URI
 
 class LoginViewModel(private val loginRepository: LoginRepository,
                      private val authClientRepository: OAuthClientRepository) : ViewModel() {
@@ -28,6 +35,9 @@ class LoginViewModel(private val loginRepository: LoginRepository,
     private val _OAuthClientregistrationResult = MutableLiveData<OAuthClientRegistrationResult>()
     val clientRegistrationResult: LiveData<OAuthClientRegistrationResult> = _OAuthClientregistrationResult
 
+    private val _authenticationUri = MutableLiveData<URI>()
+    val authenticaitonUri: LiveData<URI> = _authenticationUri
+
     fun registerOAuthClient(username: String){
 
         coroutineScopeIO.launch {
@@ -35,7 +45,8 @@ class LoginViewModel(private val loginRepository: LoginRepository,
 
             if (result is Result.Success) {
                 _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult(success =
-                RegisteredOAuthClientView( registrationAccessToken = result.data.registrationAccessToken))
+                RegisteredOAuthClientView( registrationAccessToken = result.data.registrationAccessToken,
+                    clientId = result.data.clientId))
                 )
             } else {
                 _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult( error =
@@ -58,6 +69,28 @@ class LoginViewModel(private val loginRepository: LoginRepository,
 
     fun isRegistered(): Boolean{
         return authClientRepository.isRegistered
+    }
+
+    fun authenticate(){
+        //we just publish URI for Activity consumption
+        // Generate random state string for pairing the response to the request
+        val state = State()
+// Generate nonce
+        val nonce = Nonce()
+// Specify scope
+        val scope = Scope.parse("openid io.cozy.files io.cozy.oauth.clients")
+
+// Compose the request
+        val authenticationRequest = AuthenticationRequest(
+            URI("https://f8full.mycozy.cloud/auth/authorize"),
+            ResponseType(ResponseType.Value.CODE),
+            scope, ClientID(clientRegistrationResult.value?.success?.clientId), URI("findmybikes://com.f8full.oauthceagain.oauth2redirect"), state, nonce
+        )
+
+
+        _authenticationUri.value = authenticationRequest.toURI()
+        //authenticationRequest.
+
     }
 
     fun login(username: String, password: String) {

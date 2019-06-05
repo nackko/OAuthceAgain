@@ -1,7 +1,7 @@
 package com.f8full.oauthceagain.ui.login
 
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.f8full.oauthceagain.data.LoginDataSource
 import com.f8full.oauthceagain.data.LoginRepository
 import com.f8full.oauthceagain.data.OAuthClientDataSource

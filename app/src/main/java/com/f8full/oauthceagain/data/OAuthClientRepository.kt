@@ -1,6 +1,5 @@
 package com.f8full.oauthceagain.data
 
-import com.f8full.oauthceagain.data.model.LoggedInUser
 import com.f8full.oauthceagain.data.model.RegisteredOAuthClient
 
 /**
@@ -23,8 +22,10 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
         client = null
     }
 
-    fun unregister(): Result<Boolean> {
-        val result = dataSource.unregister(clientId = client?.clientId!!,
+    fun unregister(cozyBaseUrlString: String): Result<Boolean> {
+        val result = dataSource.unregister(
+            cozyBaseUrlString = cozyBaseUrlString,
+            clientId = client?.clientId!!,
             masterAccessToken = client?.registrationAccessToken!!)
 
         if (result is Result.Success) {
@@ -34,9 +35,9 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
         return result
     }
 
-    fun register(username: String): Result<RegisteredOAuthClient> {
+    fun register(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
         // handle registration
-        val result = dataSource.register(username)
+        val result = dataSource.register(cozyBaseUrlString)
 
         if (result is Result.Success) {
             setRegisteredOAuthClient(result.data)

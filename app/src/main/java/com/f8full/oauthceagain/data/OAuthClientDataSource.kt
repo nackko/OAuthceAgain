@@ -15,7 +15,7 @@ import java.net.URI
  */
 class OAuthClientDataSource {
 
-    fun register(username: String): Result<RegisteredOAuthClient> {
+    fun register(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
 
         val jsonMetadata =
             "{\"redirect_uris\":[\"findmybikes://com.f8full.oauthceagain.oauth2redirect\"],\"client_name\":\"#findmybikes\",\"software_id\":\"github.com/f8full/findmybikesTRUC\",\"software_version\":\"999\",\"client_kind\":\"mobile\",\"client_uri\":\"https://client.example.org/\",\"logo_uri\":\"https://client.example.org/logo.svg\",\"policy_uri\":\"https://client/example.org/policy\"}"
@@ -23,7 +23,7 @@ class OAuthClientDataSource {
 
 // Make registration request
         val registrationRequest =
-            OIDCClientRegistrationRequest(URI("https://f8full.mycozy.cloud/auth/register"), metadata, null)
+            OIDCClientRegistrationRequest(URI("$cozyBaseUrlString/auth/register"), metadata, null)
 
         val truc = registrationRequest.toHTTPRequest()
 
@@ -51,11 +51,12 @@ class OAuthClientDataSource {
         )
     }
 
-    fun unregister(clientId: String,
+    fun unregister(cozyBaseUrlString:String,
+                   clientId: String,
         masterAccessToken: String): Result<Boolean> {
 
 
-        val req = ClientDeleteRequest(URI("https://f8full.mycozy.cloud/auth/register/$clientId"),
+        val req = ClientDeleteRequest(URI("$cozyBaseUrlString/auth/register/$clientId"),
             BearerAccessToken(masterAccessToken)
         )
 

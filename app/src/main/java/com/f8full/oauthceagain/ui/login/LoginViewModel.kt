@@ -10,12 +10,6 @@ import com.f8full.oauthceagain.data.Result
 
 import com.f8full.oauthceagain.R
 import com.f8full.oauthceagain.data.OAuthClientRepository
-import com.nimbusds.oauth2.sdk.ResponseType
-import com.nimbusds.oauth2.sdk.Scope
-import com.nimbusds.oauth2.sdk.id.ClientID
-import com.nimbusds.oauth2.sdk.id.State
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest
-import com.nimbusds.openid.connect.sdk.Nonce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,37 +26,71 @@ class LoginViewModel(private val loginRepository: LoginRepository,
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
+    private val _authLoginResult = MutableLiveData<AuthLoginResult>()
+    val authLoginResult: LiveData<AuthLoginResult> = _authLoginResult
+
     private val _OAuthClientregistrationResult = MutableLiveData<OAuthClientRegistrationResult>()
     val clientRegistrationResult: LiveData<OAuthClientRegistrationResult> = _OAuthClientregistrationResult
 
     private val _authenticationUri = MutableLiveData<URI>()
-    val authenticaitonUri: LiveData<URI> = _authenticationUri
+    val authenticationUri: LiveData<URI> = _authenticationUri
 
-    fun registerOAuthClient(username: String){
+    //Maybe this should also live in repo after repos fusion ?
+    private val _cozyBaseUrlString = MutableLiveData<String>()
+    val cozyBaseUrlString: LiveData<String> = _cozyBaseUrlString
+
+    fun registerOAuthClient(cozyUrlUserInput: String){
+
+        val finalUrl = getCozyUrl(cozyUrlUserInput)
+
+        //TODO: display final URL in interface
+        _cozyBaseUrlString.value = finalUrl
 
         coroutineScopeIO.launch {
-            val result = authClientRepository.register(username)
+            val result = authClientRepository.register(finalUrl)
 
             if (result is Result.Success) {
-                _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult(success =
-                RegisteredOAuthClientView( registrationAccessToken = result.data.registrationAccessToken,
-                    clientId = result.data.clientId))
+                _OAuthClientregistrationResult.postValue(
+                    OAuthClientRegistrationResult(
+                        success =
+                        RegisteredOAuthClientView(
+                            registrationAccessToken = result.data.registrationAccessToken,
+                            clientId = result.data.clientId,
+                            clientSecret = result.data.clientSecret
+                        )
+                    )
                 )
             } else {
-                _OAuthClientregistrationResult.postValue(OAuthClientRegistrationResult( error =
-                R.string.registration_failed))
+                _OAuthClientregistrationResult.postValue(
+                    OAuthClientRegistrationResult(
+                        error =
+                        R.string.registration_failed
+                    )
+                )
             }
+        }
+    }
+
+    private fun getCozyUrl(userInput: String): String {
+        return if(!userInput.contains(".")) {
+            "https://$userInput.mycozy.cloud"
+        } else if(!userInput.contains("https://") && !userInput.contains("http://")){
+            "https://$userInput"
+        } else{
+            userInput
         }
     }
 
     fun unregisterAuthclient() {
 
-        coroutineScopeIO.launch {
-            val result = authClientRepository.unregister()
+        cozyBaseUrlString.value?.let {
+            coroutineScopeIO.launch {
+                val result = authClientRepository.unregister(it)
 
-            if (result is Result.Success){
-                _OAuthClientregistrationResult.postValue(null)
-                Log.i("TAG", "OAuth client deleted")
+                if (result is Result.Success){
+                    _OAuthClientregistrationResult.postValue(null)
+                    Log.i("TAG", "OAuth client deleted")
+                }
             }
         }
     }
@@ -72,25 +100,18 @@ class LoginViewModel(private val loginRepository: LoginRepository,
     }
 
     fun authenticate(){
-        //we just publish URI for Activity consumption
-        // Generate random state string for pairing the response to the request
-        val state = State()
-// Generate nonce
-        val nonce = Nonce()
-// Specify scope
-        val scope = Scope.parse("openid io.cozy.files io.cozy.oauth.clients")
 
-// Compose the request
-        val authenticationRequest = AuthenticationRequest(
-            URI("https://f8full.mycozy.cloud/auth/authorize"),
-            ResponseType(ResponseType.Value.CODE),
-            scope, ClientID(clientRegistrationResult.value?.success?.clientId), URI("findmybikes://com.f8full.oauthceagain.oauth2redirect"), state, nonce
-        )
+        _cozyBaseUrlString.value?.let {
+            coroutineScopeIO.launch {
 
+                val result = loginRepository.buildAuthenticationUri(it, authClientRepository.client)
 
-        _authenticationUri.value = authenticationRequest.toURI()
-        //authenticationRequest.
+                if(result is Result.Success){
+                    _authenticationUri.postValue(result.data)
+                }
 
+            }
+        }
     }
 
     fun login(username: String, password: String) {
@@ -126,5 +147,25 @@ class LoginViewModel(private val loginRepository: LoginRepository,
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5;
+    }
+
+    fun retrieveAccessTokenAndRefreshToken(redirectIntentData: String) {
+
+        cozyBaseUrlString.value?.let {
+            coroutineScopeIO.launch {
+
+                //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
+                val result = loginRepository.exchangeAuthCodeForTokenCouple(
+                    it,
+                    redirectIntentData,
+                    authClientRepository.client?.clientId!!,
+                    authClientRepository.client?.clientSecret!!
+                )
+
+                if (result is Result.Success){
+                    _authLoginResult.postValue(AuthLoginResult(AuthLoggedInUserView(result.data.accessToken, result.data.refreshToken)))
+                }
+            }
+        }
     }
 }

@@ -34,6 +34,7 @@ class LoginActivity : AppCompatActivity() {
 
         if (action == Intent.ACTION_VIEW && data != null){
             Log.e("LoginActivity", "Intent data stirng : $data")
+            loginViewModel.retrieveAccessTokenAndRefreshToken(data)
         }
     }
 
@@ -43,7 +44,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         val username = findViewById<EditText>(R.id.username)
+        val cozyUrl = findViewById<TextView>(R.id.final_url)
         val clientInfo = findViewById<TextView>(R.id.client_info)
+        val accessToken = findViewById<TextView>(R.id.access_token)
+        val refreshToken = findViewById<TextView>(R.id.refresh_token)
         val registering = findViewById<Button>(R.id.registering)
         val authenticate = findViewById<Button>(R.id.authenticate)
         registering.isEnabled = true
@@ -68,7 +72,9 @@ class LoginActivity : AppCompatActivity() {
 
         loginViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
             if (it == null) {
-                clientInfo.text = ""
+                clientInfo.text = getString(R.string.client_info_default)
+                accessToken.text = ""
+                refreshToken.text = ""
                 loading.visibility = View.INVISIBLE
             }
 
@@ -81,11 +87,26 @@ class LoginActivity : AppCompatActivity() {
             }
 
             if (registrationResult.success != null){
-                clientInfo.text = registrationResult.success.registrationAccessToken
+                clientInfo.text = "OAuth client registration token : ${registrationResult.success.registrationAccessToken}"
+                accessToken.text = getString(R.string.tap_authenticate)
+                refreshToken.text = getString(R.string.tap_authenticate)
             }
         })
 
-        loginViewModel.authenticaitonUri.observe(this@LoginActivity, Observer {
+        loginViewModel.cozyBaseUrlString.observe(this@LoginActivity, Observer {
+            val url = it?: return@Observer
+
+            cozyUrl.text = url
+        })
+
+        loginViewModel.authLoginResult.observe(this@LoginActivity, Observer {
+            val authLoginResult = it ?: return@Observer
+
+            accessToken.text = "access token : ${authLoginResult.success?.accesstoken}"
+            refreshToken.text = "refresh token : ${authLoginResult.success?.refreshToken}"
+        })
+
+        loginViewModel.authenticationUri.observe(this@LoginActivity, Observer {
             it?.let { authURI ->
                 val connection = object : CustomTabsServiceConnection() {
                     override fun onCustomTabsServiceConnected(componentName: ComponentName, client: CustomTabsClient) {
@@ -102,6 +123,7 @@ class LoginActivity : AppCompatActivity() {
                 CustomTabsClient.bindCustomTabsService(
                     this@LoginActivity,
                     "com.android.chrome",
+                    //"com.brave.browser",
                     connection
                 )//mention package name which can handle the CCT their many browser present.
 
@@ -151,8 +173,9 @@ class LoginActivity : AppCompatActivity() {
 
             registering.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                if (!loginViewModel.isRegistered())
-                    loginViewModel.registerOAuthClient(username.text.toString())//, password.text.toString())
+                if (!loginViewModel.isRegistered()) {
+                        loginViewModel.registerOAuthClient(username.text.toString())
+                }
                 else
                     loginViewModel.unregisterAuthclient()
             }

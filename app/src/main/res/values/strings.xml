@@ -11,4 +11,6 @@
     <string name="login_failed">"Login failed"</string>
     <string name="registration_failed">"Registration failed"</string>
     <string name="authenticate">AUTHENTICATE</string>
+    <string name="client_info_default">Tap \'Register\'</string>
+    <string name="tap_authenticate">Tap \'Authenticate\'</string>
 </resources>

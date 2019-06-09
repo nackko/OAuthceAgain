@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import android.util.Patterns
-import com.f8full.oauthceagain.data.LoginRepository
 import com.f8full.oauthceagain.data.Result
 
 import com.f8full.oauthceagain.R
@@ -15,22 +14,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
 
-class LoginViewModel(private val loginRepository: LoginRepository,
-                     private val authClientRepository: OAuthClientRepository) : ViewModel() {
+class LoginViewModel(private val authClientRepository: OAuthClientRepository) : ViewModel() {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult> = _loginResult
-
     private val _authLoginResult = MutableLiveData<AuthLoginResult>()
     val authLoginResult: LiveData<AuthLoginResult> = _authLoginResult
 
-    private val _OAuthClientregistrationResult = MutableLiveData<OAuthClientRegistrationResult>()
-    val clientRegistrationResult: LiveData<OAuthClientRegistrationResult> = _OAuthClientregistrationResult
+    @Suppress("PrivatePropertyName")
+    private val _OAuthClientRegistrationResult = MutableLiveData<OAuthClientRegistrationResult>()
+    val clientRegistrationResult: LiveData<OAuthClientRegistrationResult> = _OAuthClientRegistrationResult
 
     private val _authenticationUri = MutableLiveData<URI>()
     val authenticationUri: LiveData<URI> = _authenticationUri
@@ -50,7 +46,7 @@ class LoginViewModel(private val loginRepository: LoginRepository,
             val result = authClientRepository.register(finalUrl)
 
             if (result is Result.Success) {
-                _OAuthClientregistrationResult.postValue(
+                _OAuthClientRegistrationResult.postValue(
                     OAuthClientRegistrationResult(
                         success =
                         RegisteredOAuthClientView(
@@ -61,7 +57,7 @@ class LoginViewModel(private val loginRepository: LoginRepository,
                     )
                 )
             } else {
-                _OAuthClientregistrationResult.postValue(
+                _OAuthClientRegistrationResult.postValue(
                     OAuthClientRegistrationResult(
                         error =
                         R.string.registration_failed
@@ -88,7 +84,7 @@ class LoginViewModel(private val loginRepository: LoginRepository,
                 val result = authClientRepository.unregister(it)
 
                 if (result is Result.Success){
-                    _OAuthClientregistrationResult.postValue(null)
+                    _OAuthClientRegistrationResult.postValue(null)
                     Log.i("TAG", "OAuth client deleted")
                 }
             }
@@ -104,7 +100,7 @@ class LoginViewModel(private val loginRepository: LoginRepository,
         _cozyBaseUrlString.value?.let {
             coroutineScopeIO.launch {
 
-                val result = loginRepository.buildAuthenticationUri(it, authClientRepository.client)
+                val result = authClientRepository.buildAuthenticationUri(it, authClientRepository.client)
 
                 if(result is Result.Success){
                     _authenticationUri.postValue(result.data)
@@ -114,16 +110,28 @@ class LoginViewModel(private val loginRepository: LoginRepository,
         }
     }
 
-    fun login(username: String, password: String) {
-        // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
+    fun retrieveAccessTokenAndRefreshToken(redirectIntentData: String) {
 
-        if (result is Result.Success) {
-            _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+        cozyBaseUrlString.value?.let {
+            coroutineScopeIO.launch {
+
+                //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
+                val result = authClientRepository.exchangeAuthCodeForTokenCouple(
+                    it,
+                    redirectIntentData,
+                    authClientRepository.client?.clientId!!,
+                    authClientRepository.client?.clientSecret!!
+                )
+
+                if (result is Result.Success){
+                    _authLoginResult.postValue(AuthLoginResult(AuthLoggedInUserView(result.data.accessToken, result.data.refreshToken)))
+                }
+            }
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //From login sample wizard
 
     fun loginDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
@@ -149,23 +157,5 @@ class LoginViewModel(private val loginRepository: LoginRepository,
         return password.length > 5;
     }
 
-    fun retrieveAccessTokenAndRefreshToken(redirectIntentData: String) {
 
-        cozyBaseUrlString.value?.let {
-            coroutineScopeIO.launch {
-
-                //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
-                val result = loginRepository.exchangeAuthCodeForTokenCouple(
-                    it,
-                    redirectIntentData,
-                    authClientRepository.client?.clientId!!,
-                    authClientRepository.client?.clientSecret!!
-                )
-
-                if (result is Result.Success){
-                    _authLoginResult.postValue(AuthLoginResult(AuthLoggedInUserView(result.data.accessToken, result.data.refreshToken)))
-                }
-            }
-        }
-    }
 }

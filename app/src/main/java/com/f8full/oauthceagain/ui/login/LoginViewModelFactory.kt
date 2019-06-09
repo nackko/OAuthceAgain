@@ -2,8 +2,6 @@ package com.f8full.oauthceagain.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.f8full.oauthceagain.data.LoginDataSource
-import com.f8full.oauthceagain.data.LoginRepository
 import com.f8full.oauthceagain.data.OAuthClientDataSource
 import com.f8full.oauthceagain.data.OAuthClientRepository
 
@@ -17,9 +15,6 @@ class LoginViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             return LoginViewModel(
-                loginRepository = LoginRepository(
-                    dataSource = LoginDataSource()
-                ),
                 authClientRepository = OAuthClientRepository(
                     dataSource = OAuthClientDataSource()
                 )

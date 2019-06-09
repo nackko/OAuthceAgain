@@ -1,5 +1,7 @@
 package com.f8full.oauthceagain.ui.login
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+//From login sample wizard
 /**
  * User details post authentication that is exposed to the UI
  */

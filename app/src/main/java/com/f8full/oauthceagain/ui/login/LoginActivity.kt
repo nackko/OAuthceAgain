@@ -38,6 +38,14 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (loginViewModel.isRegistered()) {
+            loginViewModel.unregisterAuthclient()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,20 +63,6 @@ class LoginActivity : AppCompatActivity() {
 
         loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
-
-        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
-            val loginState = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            registering.isEnabled = loginState.isDataValid
-
-            if (loginState.usernameError != null) {
-                username.error = getString(loginState.usernameError)
-            }
-            /*if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
-            }*/
-        })
 
         loginViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
             if (it == null) {
@@ -131,22 +125,6 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-            val loginResult = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
-            }
-            if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
-            }
-            setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
-        })
-
         /*username.afterTextChanged {
             loginViewModel.loginDataChanged(
                 username.text.toString(),
@@ -185,7 +163,24 @@ class LoginActivity : AppCompatActivity() {
                     loginViewModel.authenticate()
             }
         }
+
+        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
+            val loginState = it ?: return@Observer
+
+            // disable login button unless both username / password is valid
+            registering.isEnabled = loginState.isDataValid
+
+            if (loginState.usernameError != null) {
+                username.error = getString(loginState.usernameError)
+            }
+            /*if (loginState.passwordError != null) {
+                password.error = getString(loginState.passwordError)
+            }*/
+        })
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //From login sample wizard
 
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)

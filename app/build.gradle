@@ -21,6 +21,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     // workaround for "duplicate files during packaging of APK" issue
     // see https://groups.google.com/d/msg/adt-dev/bl5Rc4Szpzg/wC8cylTWuIEJ
     packagingOptions {
@@ -45,6 +50,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.0'
     // https://mvnrepository.com/artifact/com.nimbusds/oauth2-oidc-sdk
     implementation 'com.nimbusds:oauth2-oidc-sdk:6.13'
+    implementation 'de.psdev.licensesdialog:licensesdialog:2.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

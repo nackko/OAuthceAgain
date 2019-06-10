@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">OAuthceAgain</string>
     <!-- Strings related to login -->
+    <string name="hashtag_about">#about</string>
     <string name="prompt_cozy">.mycozy.cloud</string>
     <string name="prompt_password">Password</string>
     <string name="action_registering">Register</string>

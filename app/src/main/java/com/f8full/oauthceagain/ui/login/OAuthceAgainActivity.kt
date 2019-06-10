@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -23,6 +25,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.f8full.oauthceagain.R
 import com.google.android.material.snackbar.Snackbar
+import de.psdev.licensesdialog.LicensesDialog
 
 /**
  * Created by F8Full on 2019-06-10. This file is part of OAuthceAgain
@@ -43,6 +46,29 @@ class OAuthceAgainActivity : AppCompatActivity() {
             ActivityViewModel.retrieveAccessTokenAndRefreshToken(data)
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.menu_oauthceagain, menu)
+
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.about_menu_item -> {
+                LicensesDialog.Builder(this@OAuthceAgainActivity)
+                    .setNotices(R.raw.notices)
+                    .build()
+                    .show()
+
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

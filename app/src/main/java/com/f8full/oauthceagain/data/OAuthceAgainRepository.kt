@@ -15,7 +15,7 @@ import java.net.URI
  * maintains an in-memory cache of login status and user credentials information.
  */
 
-class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
+class OAuthceAgainRepository(val dataConnector: CozyDataConnector) {
 
     // in-memory cache of the registeredOAuthClient object
     var client: RegisteredOAuthClient? = null
@@ -31,7 +31,7 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
     }
 
     fun unregister(cozyBaseUrlString: String): Result<Boolean> {
-        val result = dataSource.unregister(
+        val result = dataConnector.unregister(
             cozyBaseUrlString = cozyBaseUrlString,
             clientId = client?.clientId!!,
             masterAccessToken = client?.registrationAccessToken!!)
@@ -45,7 +45,7 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
 
     fun register(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
         // handle registration
-        val result = dataSource.register(cozyBaseUrlString)
+        val result = dataConnector.register(cozyBaseUrlString)
 
         if (result is Result.Success) {
             setRegisteredOAuthClient(result.data)
@@ -82,7 +82,7 @@ class OAuthClientRepository(val dataSource: OAuthClientDataSource) {
         clientSecret: String):
             Result<UserCredentialTokens>{
 
-        val result = dataSource.exchangeAuthCodeForTokenCouple(
+        val result = dataConnector.exchangeAuthCodeForTokenCouple(
             cozyBaseUrlString,
             redirectIntentData,
             clientID,

@@ -5,7 +5,7 @@ package com.f8full.oauthceagain.ui.login
  * // If user credentials will be cached in local storage, it is recommended it be encrypted
 // @see https://developer.android.com/training/articles/keystore
  */
-data class RegisteredOAuthClientView(
+data class LoggedOAuthClientView(
     val registrationAccessToken: String,
     val clientId: String,
     val clientSecret: String

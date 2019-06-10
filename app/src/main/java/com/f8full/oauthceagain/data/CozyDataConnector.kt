@@ -22,7 +22,7 @@ import java.net.URISyntaxException
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.
  */
-class OAuthClientDataSource {
+class CozyDataConnector {
 
     fun register(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
 

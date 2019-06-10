@@ -8,13 +8,13 @@ import android.util.Patterns
 import com.f8full.oauthceagain.data.Result
 
 import com.f8full.oauthceagain.R
-import com.f8full.oauthceagain.data.OAuthClientRepository
+import com.f8full.oauthceagain.data.OAuthceAgainRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
 
-class LoginViewModel(private val authClientRepository: OAuthClientRepository) : ViewModel() {
+class OAuthceAgainViewModel(private val authceAgainRepository: OAuthceAgainRepository) : ViewModel() {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
@@ -43,13 +43,13 @@ class LoginViewModel(private val authClientRepository: OAuthClientRepository) : 
         _cozyBaseUrlString.value = finalUrl
 
         coroutineScopeIO.launch {
-            val result = authClientRepository.register(finalUrl)
+            val result = authceAgainRepository.register(finalUrl)
 
             if (result is Result.Success) {
                 _OAuthClientRegistrationResult.postValue(
                     OAuthClientRegistrationResult(
                         success =
-                        RegisteredOAuthClientView(
+                        LoggedOAuthClientView(
                             registrationAccessToken = result.data.registrationAccessToken,
                             clientId = result.data.clientId,
                             clientSecret = result.data.clientSecret
@@ -81,7 +81,7 @@ class LoginViewModel(private val authClientRepository: OAuthClientRepository) : 
 
         cozyBaseUrlString.value?.let {
             coroutineScopeIO.launch {
-                val result = authClientRepository.unregister(it)
+                val result = authceAgainRepository.unregister(it)
 
                 if (result is Result.Success){
                     _OAuthClientRegistrationResult.postValue(null)
@@ -92,7 +92,7 @@ class LoginViewModel(private val authClientRepository: OAuthClientRepository) : 
     }
 
     fun isRegistered(): Boolean{
-        return authClientRepository.isRegistered
+        return authceAgainRepository.isRegistered
     }
 
     fun authenticate(){
@@ -100,7 +100,7 @@ class LoginViewModel(private val authClientRepository: OAuthClientRepository) : 
         _cozyBaseUrlString.value?.let {
             coroutineScopeIO.launch {
 
-                val result = authClientRepository.buildAuthenticationUri(it, authClientRepository.client)
+                val result = authceAgainRepository.buildAuthenticationUri(it, authceAgainRepository.client)
 
                 if(result is Result.Success){
                     _authenticationUri.postValue(result.data)
@@ -116,11 +116,11 @@ class LoginViewModel(private val authClientRepository: OAuthClientRepository) : 
             coroutineScopeIO.launch {
 
                 //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
-                val result = authClientRepository.exchangeAuthCodeForTokenCouple(
+                val result = authceAgainRepository.exchangeAuthCodeForTokenCouple(
                     it,
                     redirectIntentData,
-                    authClientRepository.client?.clientId!!,
-                    authClientRepository.client?.clientSecret!!
+                    authceAgainRepository.client?.clientId!!,
+                    authceAgainRepository.client?.clientSecret!!
                 )
 
                 if (result is Result.Success){

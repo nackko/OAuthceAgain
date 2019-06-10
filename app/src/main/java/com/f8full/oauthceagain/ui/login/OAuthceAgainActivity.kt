@@ -1,6 +1,5 @@
 package com.f8full.oauthceagain.ui.login
 
-import android.app.Activity
 import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -24,7 +23,7 @@ import android.util.Log
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var loginViewModel: LoginViewModel
+    private lateinit var ActivityViewModel: OAuthceAgainViewModel
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -34,15 +33,15 @@ class LoginActivity : AppCompatActivity() {
 
         if (action == Intent.ACTION_VIEW && data != null){
             Log.e("LoginActivity", "Intent data stirng : $data")
-            loginViewModel.retrieveAccessTokenAndRefreshToken(data)
+            ActivityViewModel.retrieveAccessTokenAndRefreshToken(data)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        if (loginViewModel.isRegistered()) {
-            loginViewModel.unregisterAuthclient()
+        if (ActivityViewModel.isRegistered()) {
+            ActivityViewModel.unregisterAuthclient()
         }
     }
 
@@ -61,10 +60,10 @@ class LoginActivity : AppCompatActivity() {
         registering.isEnabled = true
         val loading = findViewById<ProgressBar>(R.id.loading)
 
-        loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
-            .get(LoginViewModel::class.java)
+        ActivityViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
+            .get(OAuthceAgainViewModel::class.java)
 
-        loginViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
+        ActivityViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
             if (it == null) {
                 clientInfo.text = getString(R.string.client_info_default)
                 accessToken.text = ""
@@ -87,20 +86,20 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        loginViewModel.cozyBaseUrlString.observe(this@LoginActivity, Observer {
+        ActivityViewModel.cozyBaseUrlString.observe(this@LoginActivity, Observer {
             val url = it?: return@Observer
 
             cozyUrl.text = url
         })
 
-        loginViewModel.authLoginResult.observe(this@LoginActivity, Observer {
+        ActivityViewModel.authLoginResult.observe(this@LoginActivity, Observer {
             val authLoginResult = it ?: return@Observer
 
             accessToken.text = "access token : ${authLoginResult.success?.accesstoken}"
             refreshToken.text = "refresh token : ${authLoginResult.success?.refreshToken}"
         })
 
-        loginViewModel.authenticationUri.observe(this@LoginActivity, Observer {
+        ActivityViewModel.authenticationUri.observe(this@LoginActivity, Observer {
             it?.let { authURI ->
                 val connection = object : CustomTabsServiceConnection() {
                     override fun onCustomTabsServiceConnected(componentName: ComponentName, client: CustomTabsClient) {
@@ -126,7 +125,7 @@ class LoginActivity : AppCompatActivity() {
         })
 
         /*username.afterTextChanged {
-            loginViewModel.loginDataChanged(
+            ActivityViewModel.loginDataChanged(
                 username.text.toString(),
                 "12345"//password.text.toString()
             )
@@ -134,7 +133,7 @@ class LoginActivity : AppCompatActivity() {
 
         username.apply {
             afterTextChanged {
-                loginViewModel.loginDataChanged(
+                ActivityViewModel.loginDataChanged(
                     username.text.toString(),
                     "12345"//password.text.toString()
                 )
@@ -143,7 +142,7 @@ class LoginActivity : AppCompatActivity() {
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.registerOAuthClient(
+                        ActivityViewModel.registerOAuthClient(
                             username.text.toString())
                 }
                 false
@@ -151,20 +150,20 @@ class LoginActivity : AppCompatActivity() {
 
             registering.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                if (!loginViewModel.isRegistered()) {
-                        loginViewModel.registerOAuthClient(username.text.toString())
+                if (!ActivityViewModel.isRegistered()) {
+                        ActivityViewModel.registerOAuthClient(username.text.toString())
                 }
                 else
-                    loginViewModel.unregisterAuthclient()
+                    ActivityViewModel.unregisterAuthclient()
             }
 
             authenticate.setOnClickListener{
-                if (loginViewModel.isRegistered())
-                    loginViewModel.authenticate()
+                if (ActivityViewModel.isRegistered())
+                    ActivityViewModel.authenticate()
             }
         }
 
-        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
+        ActivityViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
@@ -178,26 +177,9 @@ class LoginActivity : AppCompatActivity() {
             }*/
         })
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //From login sample wizard
-
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-            applicationContext,
-            "$welcome $displayName",
-            Toast.LENGTH_LONG
-        ).show()
-    }
-
-    private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
-    }
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////
+//From login sample wizard
 /**
  * Extension function to simplify setting an afterTextChanged action to EditText components.
  */

@@ -65,6 +65,8 @@ class LoginActivity : AppCompatActivity() {
 
         ActivityViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
             if (it == null) {
+                registering.text = getString(R.string.action_registering)
+                authenticate.isEnabled = false
                 clientInfo.text = getString(R.string.client_info_default)
                 accessToken.text = ""
                 refreshToken.text = ""
@@ -76,13 +78,16 @@ class LoginActivity : AppCompatActivity() {
             loading.visibility = View.GONE
 
             if (registrationResult.error != null){
-
+                registering.text = getString(R.string.action_registering)
+                authenticate.isEnabled = false
             }
 
             if (registrationResult.success != null){
                 clientInfo.text = "OAuth client registration token : ${registrationResult.success.registrationAccessToken}"
                 accessToken.text = getString(R.string.tap_authenticate)
                 refreshToken.text = getString(R.string.tap_authenticate)
+                registering.text = getString(R.string.action_unregistering)
+                authenticate.isEnabled = true
             }
         })
 
@@ -97,6 +102,7 @@ class LoginActivity : AppCompatActivity() {
 
             accessToken.text = "access token : ${authLoginResult.success?.accesstoken}"
             refreshToken.text = "refresh token : ${authLoginResult.success?.refreshToken}"
+            authenticate.isEnabled = false
         })
 
         ActivityViewModel.authenticationUri.observe(this@LoginActivity, Observer {

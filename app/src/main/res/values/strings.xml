@@ -3,7 +3,8 @@
     <!-- Strings related to login -->
     <string name="prompt_cozy">.mycozy.cloud</string>
     <string name="prompt_password">Password</string>
-    <string name="action_registering">Register or unregister</string>
+    <string name="action_registering">Register</string>
+    <string name="action_unregistering">Unregister</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome">"Welcome !"</string>
     <string name="invalid_username">Not a valid username</string>

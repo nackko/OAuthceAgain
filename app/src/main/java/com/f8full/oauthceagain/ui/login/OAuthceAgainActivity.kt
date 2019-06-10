@@ -1,24 +1,28 @@
 package com.f8full.oauthceagain.ui.login
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import android.net.Uri
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.*
-
-import com.f8full.oauthceagain.R
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsClient
-import android.content.ComponentName
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.CustomTabsServiceConnection
-import android.net.Uri
-import android.util.Log
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.f8full.oauthceagain.R
+import com.google.android.material.snackbar.Snackbar
 
 
 class LoginActivity : AppCompatActivity() {
@@ -66,6 +70,7 @@ class LoginActivity : AppCompatActivity() {
         ActivityViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
             if (it == null) {
                 registering.text = getString(R.string.action_registering)
+                username.isEnabled = true
                 authenticate.isEnabled = false
                 clientInfo.text = getString(R.string.client_info_default)
                 accessToken.text = ""
@@ -88,6 +93,9 @@ class LoginActivity : AppCompatActivity() {
                 refreshToken.text = getString(R.string.tap_authenticate)
                 registering.text = getString(R.string.action_unregistering)
                 authenticate.isEnabled = true
+                username.isEnabled = false
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(username.windowToken, 0)
             }
         })
 
@@ -119,14 +127,25 @@ class LoginActivity : AppCompatActivity() {
 
                     }
                 }
-                CustomTabsClient.bindCustomTabsService(
-                    this@LoginActivity,
-                    "com.android.chrome",
-                    //"com.brave.browser",
-                    connection
-                )//mention package name which can handle the CCT their many browser present.
 
+                if (!CustomTabsClient.bindCustomTabsService(
+                        this@LoginActivity,
+                        "com.brave.browser",
+                        //"com.android.chrome",
+                        connection
+                    )
+                ) {
+                    Snackbar.make(findViewById(R.id.container), "Brave browser recommended", Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Download") {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data = Uri.parse("market://details?id=com.brave.browser")
+                            if (intent.resolveActivity(packageManager) != null) {
+                                startActivity(intent)
+                            }
 
+                        }
+                        .show()
+                }
             }
         })
 
@@ -158,6 +177,7 @@ class LoginActivity : AppCompatActivity() {
                 loading.visibility = View.VISIBLE
                 if (!ActivityViewModel.isRegistered()) {
                         ActivityViewModel.registerOAuthClient(username.text.toString())
+
                 }
                 else
                     ActivityViewModel.unregisterAuthclient()

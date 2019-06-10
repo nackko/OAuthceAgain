@@ -5,20 +5,26 @@ import com.f8full.oauthceagain.data.model.UserCredentialTokens
 import com.nimbusds.oauth2.sdk.*
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic
 import com.nimbusds.oauth2.sdk.auth.Secret
-import java.io.IOException
-import com.nimbusds.oauth2.sdk.client.ClientRegistrationErrorResponse
 import com.nimbusds.oauth2.sdk.client.ClientDeleteRequest
+import com.nimbusds.oauth2.sdk.client.ClientRegistrationErrorResponse
 import com.nimbusds.oauth2.sdk.http.HTTPResponse
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.id.State
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken
 import com.nimbusds.oauth2.sdk.util.JSONObjectUtils
 import com.nimbusds.openid.connect.sdk.*
-import com.nimbusds.openid.connect.sdk.rp.*
+import com.nimbusds.openid.connect.sdk.rp.OIDCClientInformationResponse
+import com.nimbusds.openid.connect.sdk.rp.OIDCClientMetadata
+import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationRequest
+import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationResponseParser
+import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 
-
+/**
+ * Created by F8Full on 2019-06-10. This file is part of OAuthceAgain
+ *
+ */
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.
  */

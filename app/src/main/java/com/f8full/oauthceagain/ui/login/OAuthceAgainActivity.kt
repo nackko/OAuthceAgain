@@ -24,8 +24,11 @@ import androidx.lifecycle.ViewModelProviders
 import com.f8full.oauthceagain.R
 import com.google.android.material.snackbar.Snackbar
 
-
-class LoginActivity : AppCompatActivity() {
+/**
+ * Created by F8Full on 2019-06-10. This file is part of OAuthceAgain
+ *
+ */
+class OAuthceAgainActivity : AppCompatActivity() {
 
     private lateinit var ActivityViewModel: OAuthceAgainViewModel
 
@@ -36,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
         val data = intent?.dataString
 
         if (action == Intent.ACTION_VIEW && data != null){
-            Log.e("LoginActivity", "Intent data stirng : $data")
+            Log.e("OAuthceAgainActivity", "Intent data stirng : $data")
             ActivityViewModel.retrieveAccessTokenAndRefreshToken(data)
         }
     }
@@ -67,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
         ActivityViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
             .get(OAuthceAgainViewModel::class.java)
 
-        ActivityViewModel.clientRegistrationResult.observe(this@LoginActivity, Observer {
+        ActivityViewModel.clientRegistrationResult.observe(this@OAuthceAgainActivity, Observer {
             if (it == null) {
                 registering.text = getString(R.string.action_registering)
                 username.isEnabled = true
@@ -99,13 +102,13 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        ActivityViewModel.cozyBaseUrlString.observe(this@LoginActivity, Observer {
+        ActivityViewModel.cozyBaseUrlString.observe(this@OAuthceAgainActivity, Observer {
             val url = it?: return@Observer
 
             cozyUrl.text = url
         })
 
-        ActivityViewModel.authLoginResult.observe(this@LoginActivity, Observer {
+        ActivityViewModel.authLoginResult.observe(this@OAuthceAgainActivity, Observer {
             val authLoginResult = it ?: return@Observer
 
             accessToken.text = "access token : ${authLoginResult.success?.accesstoken}"
@@ -113,14 +116,17 @@ class LoginActivity : AppCompatActivity() {
             authenticate.isEnabled = false
         })
 
-        ActivityViewModel.authenticationUri.observe(this@LoginActivity, Observer {
+        ActivityViewModel.authenticationUri.observe(this@OAuthceAgainActivity, Observer {
             it?.let { authURI ->
                 val connection = object : CustomTabsServiceConnection() {
                     override fun onCustomTabsServiceConnected(componentName: ComponentName, client: CustomTabsClient) {
                         val builder = CustomTabsIntent.Builder()
                         val intent = builder.build()
                         client.warmup(0L) // This prevents backgrounding after redirection
-                        intent.launchUrl(this@LoginActivity, Uri.parse(authURI.toURL().toString()))//pass the url you need to open
+                        intent.launchUrl(
+                            this@OAuthceAgainActivity,
+                            Uri.parse(authURI.toURL().toString())
+                        )//pass the url you need to open
                     }
 
                     override fun onServiceDisconnected(name: ComponentName) {
@@ -129,7 +135,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 if (!CustomTabsClient.bindCustomTabsService(
-                        this@LoginActivity,
+                        this@OAuthceAgainActivity,
                         "com.brave.browser",
                         //"com.android.chrome",
                         connection
@@ -189,7 +195,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        ActivityViewModel.loginFormState.observe(this@LoginActivity, Observer {
+        ActivityViewModel.loginFormState.observe(this@OAuthceAgainActivity, Observer {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid

@@ -11,6 +11,10 @@ import com.nimbusds.openid.connect.sdk.Nonce
 import java.net.URI
 
 /**
+ * Created by F8Full on 2019-06-10. This file is part of OAuthceAgain
+ *
+ */
+/**
  * Class that requests authentication and user information from the remote data source and
  * maintains an in-memory cache of login status and user credentials information.
  */

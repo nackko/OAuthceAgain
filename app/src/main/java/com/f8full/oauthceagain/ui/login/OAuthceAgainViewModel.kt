@@ -1,19 +1,22 @@
 package com.f8full.oauthceagain.ui.login
 
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import android.util.Patterns
-import com.f8full.oauthceagain.data.Result
-
 import com.f8full.oauthceagain.R
 import com.f8full.oauthceagain.data.OAuthceAgainRepository
+import com.f8full.oauthceagain.data.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
 
+/**
+ * Created by F8Full on 2019-06-10. This file is part of OAuthceAgain
+ *
+ */
 class OAuthceAgainViewModel(private val authceAgainRepository: OAuthceAgainRepository) : ViewModel() {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
